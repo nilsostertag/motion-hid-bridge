@@ -57,7 +57,7 @@ impl MouseInput {
             }
 
             // ΔY und Geschwindigkeit berechnen
-            let dy = raw.data.mouse.lLastY;
+            let dy = -raw.data.mouse.lLastY;
             let now = Instant::now();
             let dt = now.duration_since(self.last_time);
             self.last_time = now;
