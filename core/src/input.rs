@@ -2,12 +2,14 @@ use std::time::Instant;
 use windows::Win32::Foundation::*;
 use windows::Win32::UI::Input::*;
 use crate::device::DeviceInfo;
+use crate::motion::{update_motion, MotionState};
 
 /// Struktur für die Maus-Eingabe
 pub struct MouseInput {
     /// Ausgewählte Maus
     pub selected: Option<DeviceInfo>,
     last_time: Instant,
+    pub motion: MotionState,
 }
 
 impl MouseInput {
@@ -16,6 +18,7 @@ impl MouseInput {
         Self {
             selected: None,
             last_time: Instant::now(),
+            motion: MotionState::new(),
         }
     }
 
@@ -61,9 +64,12 @@ impl MouseInput {
             let now = Instant::now();
             let dt = now.duration_since(self.last_time);
             self.last_time = now;
+            
+            // --- Motion Layer ---
+            let motion = update_motion(dy, dt.as_secs_f32(), 1.0, &mut self.motion);
+            self.motion = motion;
 
-            // Geschwindigkeit in m/s (vorläufig: 1 ΔY = 1 mm)
-            Some(dy as f32 / 1000.0 / dt.as_secs_f32())
+            Some(self.motion.smooth_speed)
         } else {
             None
         }
